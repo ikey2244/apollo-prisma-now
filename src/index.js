@@ -1,70 +1,45 @@
-const { ApolloServer, gql } = require('apollo-server');
-const { PrismaClient } = require('@prisma/client')
+import express from 'express'
+import { ApolloServer } from 'apollo-server-express'
+import { PrismaClient } from '@prisma/client'
+import expressJwt from 'express-jwt'
 
-const prisma = new PrismaClient()
+import { genSchema } from './helpers/genSchema'
+require('dotenv').config();
 
-function createContext() {
-  return { prisma }
-}
+(async () => {
+  const app = express()
+  // middlware
+  app.use(
+    expressJwt({
+      secret: process.env.APP_SECRET,
+      algorithms: ['HS256'],
+      credentialsRequired: false
+    })
+  )
 
-// The GraphQL schema
-const typeDefs = gql`
-  type Query {
-    "A simple type for getting started!"
-    users: [User]
-  }
+  const prisma = new PrismaClient()
 
-  type Mutation {
-    createUser: User
-  }
-
-  type User {
-    name: String
-  }
-`;
-
-// A map of functions which return data for the schema.
-const resolvers = {
-  Query: {
-    users: async (parent, args, context) => {
-      const allUsers = await context.prisma.user.findMany({
-        include: { 
-          posts: true,
-          profile: true 
-        },
-      })
-      return allUsers
-      
-    }
-  },
-  Mutation: {
-    createUser: async (parent, args, context) => {
-      const user = await context.prisma.user.create({
-        data: {
-          name: "isaac@businesscreditreports.com",
-          email: "Isaac Weber",
-          posts: {
-            create: { title: "Hello World" },
-          },
-          profile: {
-            create: { bio:  "I like turtles" }
-          }
-        }
-      })
-
-      return user
+  const context = ({ req }) => {
+    const currentUser = req.user || null
+    return {
+      currentUser,
+      ...req,
+      prisma
     }
   }
-};
 
-const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-  context: createContext,
-  playground: true,
-  introspection: true
-});
+  const server = new ApolloServer({
+    schema: genSchema(),
+    context,
+    playground: true,
+    introspection: true
+  })
 
-server.listen().then(({ url }) => {
-  console.log(`🚀 Server ready at ${url}`);
-});
+  server.applyMiddleware({ app, path: '/graphql' })
+
+  app.listen(4000, () => {
+    console.log('http://localhost:4000/graphql')
+  })
+})().catch(err => {
+  console.error(err)
+})

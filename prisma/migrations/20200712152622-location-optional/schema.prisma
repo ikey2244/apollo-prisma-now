@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url = "***"
 }
 
 model Memory {
@@ -19,7 +19,6 @@ model Memory {
 model User {
   id         Int      @default(autoincrement()) @id
   email      String   @unique
-  password   String
   name       String
   memories   Memory[]
 }

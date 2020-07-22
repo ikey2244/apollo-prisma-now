@@ -1,0 +1,8 @@
+# Prisma Migrate lockfile v1
+
+20200711183531-first-migration
+20200712152136-refactor-to-use-memories
+20200712152622-location-optional
+20200720221545-add-password
+20200720223146-revert
+20200720224322-create-tables

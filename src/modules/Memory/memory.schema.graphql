@@ -1,0 +1,27 @@
+
+type Memory {
+  id: ID!
+  title: String!
+  location: String
+  createdAt: String
+}
+
+type Query {
+  memory: Memory
+  memories: [Memory]
+}
+
+type Mutation {
+  createMemory(data: MemoryInput): Memory
+  updateMemory(id: ID!): Memory
+  deleteMemory: Memory
+}
+
+input MemoryInput {
+  title: String!
+  location: String!
+}
+
+
+
+
